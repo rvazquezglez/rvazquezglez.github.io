@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <script type="text/javascript" src="js/convert-to-math.js"></script>
+  <script type='text/javascript' src='js/jsxgraphcore.js'></script>
+  <script type="text/javascript" src="js/jquery-1.7.2.js"></script>
+
+  <meta charset="UTF-8" />
+  <meta name="description" content="Página de educación a distancia de la Escuela Superior de Economía del Instituto Politécnico Nacional" />
+  <meta name="author" content="Raúl Vázquez y Raúl Diaz" />
+  <meta name="copyright" content="2012, ESE-IPN" />
+  <meta name="license" content="Licensed under MIT License" />
+
+  <title>ESE en línea.</title>
+
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <!--<link rel="stylesheet" type="text/css" href="css/bootstrap-responsive.min.css">
+  -->
+  <link rel="stylesheet" type="text/css" href="css/font-awesome.css">
+  <link rel="stylesheet" type="text/css" href="css/prettify.css">
+  <link rel="stylesheet" type="text/css" href="css/metro.css">
+  <link rel="stylesheet" type="text/css" href="css/site.css">
+  <!--<link rel="stylesheet" type="text/css" href="css/lyx.css">
+  -->
+  <script type="text/javascript" src="js/page-transition.js"></script>
+  <script type="text/javascript" src="js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="js/prettify.js"></script>
+  <script type="text/javascript" src="js/metro.js"></script>
+  <script type="text/javascript" src="js/site.js"></script>
+
+  <title>Graficador en línea.</title>
+
+  <style type="text/css">
+        body {
+            background: #ffffff
+        }
+        .metro {
+            width: 940px;
+            overflow: hidden;
+        }
+        .metro-section {
+            width: 600px !important;
+        }
+        #section1 {
+        }
+        #section2 {
+
+        }
+        #section3 {
+            width: 320px !important;
+        }
+        .metro-sections {
+            width: 800px !important;
+        }
+        .start {
+            position: absolute;
+            top: 60px;
+        }
+        #demo {
+        }
+    </style>
+
+</head>
+<body>
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner-metodos">
+      <h1>Graficador de Funciones en línea.</h1>
+    </div>
+  </div>
+  <div class="container" id="demo">
+    <div  class="metro metro-theme-light">
+
+      <form name="myPlotterForm" id="myPlotterForm" class="centerBox">
+        <p>
+          <span class="intmath"> <i>f</i> <sub>1</sub>
+            ( <i>x</i>
+            ) =
+          </span>
+          <input type="text" id="graph1" value="cos(x)" onkeyup="plotter2(1);">
+          <input type="button" value="Grafica" onClick="plotter2(0)">
+          <input type="button" value="Borrar" onClick="plotter2(1);"></p>
+        <p>
+          <span class="intmath">
+            <i>f</i> <sub>2</sub>
+            (
+            <i>x</i>
+            ) =
+          </span>
+          <input type="text" id="graph2" value="sec(x)">
+          <input type="button" value="Grafica" onClick="plotter2(2)">
+          <input type="button" value="Borrar" onClick="plotter2(3);"></p>
+        <p>
+          <span class="intmath">
+            <i>f</i>
+            <sub>3</sub>
+            (
+            <i>x</i>
+            ) =
+          </span>
+          <input type="text" id="graph3" value="cosh (0.25x)">
+          <input type="button" value="Grafica" onClick="plotter2(4)">
+          <input type="button" value="Borrar" onClick="plotter2(5);"></p>
+      </form>
+
+      <div id="jxgbox" class="jxgbox" style="width:650px;height:450px;margin:0 auto"></div>
+      <script type="text/javascript">
+JXG.Options.grid.gridOpacity = '70';
+JXG.Options.grid.gridDash=false;  
+var board = JXG.JSXGraph.initBoard('jxgbox', {
+  boundingbox:[-10.9, 8.55, 10.9, -8.55], 
+  showCopyright:false, grid:true, snapToGrid:true, keepaspectratio:false
+});
+
+axisx = board.create('axis', [[0,0], [1,0]], {});
+axisy = board.create('axis', [[0,0], [0,1]], {});
+
+var f, curve1, curve2, curve3, num; // global objects
+
+function plotter2(num) {
+  if(num==0){
+    if(curve1) {
+      board.removeObject(curve1)
+     }
+     fn1 = document.getElementById('graph1').value;
+     curve1=board.create('functiongraph', [function(x){return eval(mathjs(fn1,"x"));}],{name:fn1, strokeWidth:1, strokeColor:'#0000ff',withLabel:true});
+  } else if (num==1){
+     board.removeObject(curve1)
+  } else if(num==2){
+     if(curve2) {
+       board.removeObject(curve2)
+     }
+     fn2 = document.getElementById('graph2').value;
+     curve2=board.create('functiongraph', [function(x){return eval(mathjs(fn2,"x"));}],{name:fn2, strokeWidth:1, strokeColor:'#008800',withLabel:true});
+  } else if (num==3){
+     board.removeObject(curve2)
+  } else if(num==4){
+     if(curve3) {
+       board.removeObject(curve3)
+     }
+     fn3 = document.getElementById('graph3').value;
+     curve3=board.create('functiongraph', [function(x){return eval(mathjs(fn3,"x"));}],{name:fn3, strokeWidth:1, strokeColor:'#ff00ff',withLabel:true});
+  } else if (num==5){
+     board.removeObject(curve3)
+  }
+  showAxis = function() {
+    var i;
+    if(document.myForm.axisbox.checked == true) {
+      axisx.showElement();
+      axisx.defaultTicks.showElement();
+      axisy.showElement();
+      axisy.defaultTicks.showElement();
+    } else {
+      axisx.hideElement();
+      axisx.defaultTicks.hideElement();
+      axisy.hideElement();
+      axisy.defaultTicks.hideElement();      
+    }
+  }
+  showGrid = function() {
+    if(document.myForm.gridbox.checked == true) {
+      board.addGrid().fullUpdate();
+    } else {
+      board.removeGrids().fullUpdate();
+    }
+  }
+  board.update(); //This is here so axis numbers are in correct position
+}
+//txt = board.create('text',[-9.7,-7.7, '<span style="font-family:Arial, sans-serif;color:#888">Copyright &copy; www.intmath.com</span>'], {fontSize:12});
+document.onLoad = plotter2(0);
+</script>
+
+      <form name="myForm" id="myForm" class="centerBox">
+        <p>
+          Muestra los ejes:
+          <input onClick="showAxis()" name="axisbox" id="axisbox" type="checkbox" checked="checked">
+          <span class="separate">
+            Muestra la cuadrícula:
+            <input  onClick="showGrid()" name="gridbox" id="gridbox" type="checkbox" checked="checked"></span>
+        </p>
+      </form>
+      <p>
+        Puedes <strong>acercar y alejar</strong>
+        la gráfica manteniendo presionada la tecla shift y moviendo el botón central del raton.
+      </p>
+      <p>
+        Puedes <strong>mover</strong>
+        la gráfica manteniendo presionada la tecla shift y arrastrando la gráfica con el mouse.
+      </p>
+      <p>
+        <strong>O</strong>
+        puedes usar los botones "&minus; o + &larr; &uarr; &darr; &rarr;" que están en la esquina de la gráfica para hacer los efectos de acercamiento, alejamiento y movimientos.
+      </p>
+    </div>
+    <footer class="metro footer">
+      <p class="pull-right">
+        <a class="transition" href="index.html">Inicio</a>
+      </p>
+      <p class="tertiary-info-secondary">
+        &copy; 2012 Escuela Superior de Economía - Instituto Politécnico Nacional.
+      </p>
+    </footer>
+  </div>
+</body>
+</html>

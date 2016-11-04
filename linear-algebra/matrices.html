@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<title>ESE en línea.</title>
+
+	<link rel="icon" href="favicon.ico" type="image/x-icon">
+
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+	<!--<link rel="stylesheet" type="text/css" href="css/bootstrap-responsive.min.css">
+	-->
+	<link rel="stylesheet" type="text/css" href="css/font-awesome.css">
+	<link rel="stylesheet" type="text/css" href="css/prettify.css">
+	<link rel="stylesheet" type="text/css" href="css/metro.css">
+	<link rel="stylesheet" type="text/css" href="css/site.css">
+	<!--<link rel="stylesheet" type="text/css" href="css/lyx.css">
+	-->
+
+	<script type="text/javascript" src="js/jquery-1.7.2.js"></script>
+	<script type="text/javascript" src="js/page-transition.js"></script>	
+	<script type="text/javascript" src="js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/prettify.js"></script>
+	<script type="text/javascript" src="js/metro.js"></script>
+	<script type="text/javascript" src="js/jquery.numeric.js"></script>
+	<script type="text/javascript" src="js/site.js"></script>		
+
+	<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>	
+	<script type="text/javascript" src="js/sylvester.js"></script>
+	<script type="text/javascript" src="js/matrices.js"></script>
+	<script type="text/javascript">    	
+	$(document).ready(function(){	   
+	   $("#tipoOperacion").change(function(event){	   	
+	   		dibujaMatriz();	   	
+	   });
+	   $("#solve").click(function(event){
+	   		resuelve();
+	   });
+	   $("#solve").hide();	   
+	 });
+
+	function dibujaMatriz(){
+		var tamanio = $("#tamanioMatriz").val();		
+		var htmlString = "<p>Matriz \\(A\\)</p>";
+		for (var i = 0; i < tamanio; i++) {
+			for (var j = 0; j < tamanio; j++) {				
+				htmlString += "<input type=\"text\" id=\"A"+i+"_"+j+"\" size=\"4\" maxlength=\"4\" class='numeric'/>";
+			}
+			htmlString += "<br />";
+		}
+		if(esDosOperandos()){
+			htmlString += "<p>Matriz \\(B\\)</p>";
+			for (var i = 0; i < tamanio; i++) {
+				for (var j = 0; j < tamanio; j++) {
+					//alert("Entro al for ");
+					htmlString += "<input type=\"text\" id=\"B"+i+"_"+j+"\" size=\"4\" maxlength=\"4\" class='numeric' />";
+				}
+				htmlString += "<br />"
+			}
+		}
+		
+		$("#matrixValues").html(htmlString);
+		MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+		$("#solve").show();		
+		$(".numeric").numeric();
+	}
+	function esDosOperandos(){
+		return $("#tipoOperacion").val() == "sum" || 
+		$("#tipoOperacion").val() == "dif" || 
+		$("#tipoOperacion").val() == "mul";
+	}
+
+	function resuelve(){
+		resuelveOperacion();
+
+		MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+	}
+
+	function resuelveOperacion(){
+		var matrizA = obtenMatrizA();
+		var matrizB = null;
+		if(esDosOperandos()){
+			matrizB = obtenMatrizB();
+		}
+		
+		var htmlString = "";		
+		switch ($("#tipoOperacion").val())
+		{
+			case "sum":
+			  htmlString = resuelveSuma(matrizA,matrizB);
+			  break;
+			case "dif":
+			  htmlString = resuelveResta(matrizA,matrizB);
+			  break;
+			case "mul":
+			  htmlString = resuelvePunto(matrizA,matrizB);
+			  break;
+			case "det":
+				if(parseInt($("#tamanioMatriz").val()) == 2){
+				  htmlString = resuelveDet2(matrizA,matrizB);
+				}
+				else{
+					alert("Los determinantes de más de 2x2 aun no han sido implementados aquí.");
+				}			  
+			  break;
+			case "inv":
+			  htmlString = resuelveInversa(matrizA);
+			  break;
+
+			case "trans":
+			  htmlString = resuelveTranspuesta(matrizA);
+			  break;
+
+			case "diag":
+		  	  htmlString = resuelveSumaDiagonal(matrizA);
+			  break;
+		}		
+		$("#solucion2").html(htmlString);	 
+
+	}
+	function obtenMatrizA(){
+		var tamanio = $("#tamanioMatriz").val();
+		var matrizret= [];
+		for (var i = 0; i < tamanio; i++) {
+			var tempArray = [];
+			for (var j = 0; j < tamanio; j++) {
+				var temp = "#A"+i+"_"+j;				
+				tempArray.push( $(temp).val());				
+			}
+			matrizret.push(tempArray);
+		}
+		return matrizret;
+	}
+
+	function obtenMatrizB(){
+	var tamanio = $("#tamanioMatriz").val();
+		var matrizret= [];
+		for (var i = 0; i < tamanio; i++) {
+			var tempArray = [];
+			for (var j = 0; j < tamanio; j++) {
+				var temp = "#B"+i+"_"+j;				
+				tempArray.push( $(temp).val());				
+			}
+			matrizret.push(tempArray);
+		}
+		return matrizret;
+	}
+
+	function pintaMatrices(){
+		var tamanio = $("#tamanioMatriz").val();
+		var htmlString="<p>\\( \\left(\\begin{matrix}";
+		for (var i = 0; i < tamanio; i++) {
+			for (var j = 0; j < tamanio; j++) {
+				var temp = "#A"+i+"_"+j;				
+				htmlString += $(temp).val();
+				if(j < tamanio -1){
+					htmlString += " & "
+				}
+			}
+			if(i < tamanio -1){
+				htmlString += "\\\\";
+			}
+		}
+		htmlString += "\\end{matrix}\\right)";
+		htmlString += pintaOperador();
+		if(esDosOperandos()){
+			htmlString += "\\left(\\begin{matrix}";
+			for (var i = 0; i < tamanio; i++) {
+				for (var j = 0; j < tamanio; j++) {
+					htmlString += "  \\color{red}{ "
+					htmlString += $("#B"+i+"_"+j).val();
+					htmlString += "} "
+					if(j < tamanio -1){
+						htmlString += " & "
+					}
+				}
+				if(i < tamanio -1){
+					htmlString += "\\\\";
+				}
+			}
+		}
+		htmlString+="\\end{matrix}\\right)\\)</p>";
+		$("#solucion").html(htmlString);		
+	}
+	function pintaOperador(){
+		if($("#tipoOperacion").val() == "sum"  ){
+			return "+";
+		}
+		if($("#tipoOperacion").val() == "dif"  ){
+			return "-";
+		}
+		if($("#tipoOperacion").val() == "mul"){
+			return "\\times"
+		}
+	}
+
+	function pruebapintaMatriz(){		
+		var matriz1 = [[1,2],[3,4]];
+		var matriz2 = [[5,6],[7,8]];
+		var htmlString = resuelveDet2(matriz1);		
+		$("#solucion2").html(htmlString);	 
+
+	}
+
+	/*
+	Función para pintar matrices
+	matriz es un arreglo bidimencional del tipo [[a,b],[c,d]]
+	dif es un arreglo de coordenadas del tipo ["1,1"]
+	*/
+	function pintaMatrizConP(matriz, dif){		
+		var htmlString="<p>\\( \\left(\\begin{matrix}";
+		for (var i = 0; i < matriz.length; i++) {			
+			for (var j = 0; j < matriz[i].length; j++) {				
+				if(!$.inArray(""+i+","+j,dif)){
+					htmlString += "  \\color{red}{ "
+				}
+				htmlString += matriz[i][j];
+				if(!$.inArray(""+i+","+j,dif)){
+				htmlString += "  } "	
+				}
+				if(j < matriz[i].length -1){
+					htmlString += " & "
+				}
+			}
+			if(i < matriz.length -1){
+				htmlString += "\\\\";
+			}
+		}
+		htmlString += "\\end{matrix}\\right)\\)";
+		return htmlString;
+	}
+
+
+  </script>
+	<style type="text/css">
+        body {
+            background: #ffffff
+        }
+        .metro {
+            width: 940px;
+            overflow: hidden;
+        }
+        .metro-section {
+            width: 600px !important;
+        }
+        #section1 {
+        }
+        #section2 {
+
+        }
+        #section3 {
+            width: 320px !important;
+        }
+        .metro-sections {
+            width: 800px !important;
+        }
+        .start {
+            position: absolute;
+            top: 60px;
+        }
+        #demo {
+        }
+    </style>
+
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<title>Graficador en línea.</title>
+</head>
+<body>
+	<div class="navbar navbar-fixed-top">
+		<div class="navbar-inner-metodos">
+			<h1>Resuelve tus matrices en línea.</h1>
+		</div>
+	</div>
+	<div class="container" id="demo">
+		<div  class="metro metro-theme-light">
+			<h3>Software para resolver matrices.</h3>
+			<p>
+				Por favor introduce el tamaño de las matrices que quieras resolver.
+			</p>
+			<select id="tamanioMatriz">
+				<option value="2">\(2\times2\)</option>
+				<option value="3">\(3\times3\)</option>
+				<option value="4">\(4\times4\)</option>
+				<option value="5">\(5\times5\)</option>
+				<option value="6">\(6\times6\)</option>
+			</select>
+			<p>Por favor introduce la operación que quieres realizar.</p>
+			<select id="tipoOperacion">
+				<option value="sum">Suma</option>
+				<option value="dif">Resta</option>
+				<option value="mul">Multiplicación</option>
+				<option value="det">Determinante</option>
+				<option value="inv">Inversa</option>
+				<option value="trans">Transpuesta</option>
+				<option value="diag">Traza de la matriz</option>
+			</select>
+			<!--<button id="genIntro" type="button">Introducir valores</button>
+		-->
+		<br />
+		<div id="matrixValues"></div>
+		<br />
+		<button id="solve" type="button">Resolver</button>
+		<div id="solucion"></div>
+		<div id="solucion2"></div>
+	</div>
+	<footer class="metro footer">
+		<p class="pull-right">
+			<a class="transition" href="index.html">Inicio</a>
+		</p>
+		<p class="tertiary-info-secondary">
+			&copy; 2012 Escuela Superior de Economía - Instituto Politécnico Nacional.
+		</p>
+	</footer>
+</div>
+</body>
+</html>
